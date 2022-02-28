@@ -8,20 +8,21 @@ import java.util.Vector;
 
 public class MySketch extends PApplet{
     // player x position
-    public float px = 500;
+    public static float px = 500;
     // player y position
-    public float py = 375;
+    public static float py = 375;
     // are you in the shop menu
     public boolean shop = false;
     // upgrades:
+    public static ArrayList<Hullbreaker> hullbreakers = new ArrayList<>();
     public static HashMap<String, Integer> upgrades = new HashMap<>();
     // player heading in radians
-    public float ph = 0;
+    public static float ph = 0;
     // player velocity x
-    public float pvx = 0;
+    public static float pvx = 0;
     // player velocity y
-    public float pvy = 0;
-    public int score = 300;
+    public static float pvy = 0;
+    public static int score = 300;
     public boolean lost = true;
     // recylables
     public ArrayList<Vector<Float>> re = new ArrayList<>();
@@ -76,6 +77,7 @@ public class MySketch extends PApplet{
             // handle key presses, update velocity, deal with screen wrapping
             this.updatePlayer();
             // compute the rotated offset points for drawing the ship
+            this.updateHullbreakers();
             ArrayList<Float> offsetRotated = new ArrayList<>();
             for (int i = 0; i < offsetPoints.size(); i += 2) {
                 float x1 = offsetPoints.get(i);
@@ -147,6 +149,37 @@ public class MySketch extends PApplet{
                 }
             }
             rect(130, 80, 580, 40);
+            fill(0,0,120);
+            rect(120, 130, 600, 60);
+            if(mouseX<710 && mouseX>130 && mouseY<180&&mouseY>140){
+                fill(0,0,255);
+                if (mousePressed && score >= Math.pow(upgrades.get("HullbreakerNum"), 2)*10 + 30){
+                    upgrades.replace("HullbreakerNum", upgrades.get("HullbreakerNum")+1);
+                    score -= 10*Math.pow(upgrades.get("HullbreakerNum")-1, 2) + 30;
+                    hullbreakers.add(new Hullbreaker());
+                }
+            }
+            rect(130, 140, 580, 40);
+            fill(0,0,120);
+            rect(120, 190, 600, 60);
+            if(mouseX<710 && mouseX>130 && mouseY<240&&mouseY>200){
+                fill(0,0,255);
+                if (mousePressed && score >= upgrades.get("BreakerDamage")*10 - 20){
+                    upgrades.replace("BreakerDamage", upgrades.get("BreakerDamage")+1);
+                    score -= upgrades.get("BreakerDamage")*10 - 30;
+                }
+            }
+            rect(130, 200, 580, 40);
+            fill(0,0,120);
+            rect(120, 250, 600, 60);
+            if(mouseX<710 && mouseX>130 && mouseY<300&&mouseY>260){
+                fill(0,0,255);
+                if (mousePressed && score >= upgrades.get("BreakerHitbox")*10){
+                    upgrades.replace("BreakerHitbox", upgrades.get("BreakerHitbox")+1);
+                    score -= upgrades.get("BreakerHitbox")*10-10;
+                }
+            }
+            rect(130, 260, 580, 40);
             fill(255);
             textSize(40);
             text("back", 20, 75);
@@ -154,6 +187,9 @@ public class MySketch extends PApplet{
             textSize(30);
             text("Damage:" + upgrades.get("Damage") + " Cost: " + (upgrades.get("Damage")*10+10), 130, 50);
             text("Fire Rate:" + upgrades.get("Fire Rate") + " Cost: " + (upgrades.get("Fire Rate")*10+10), 130, 110);
+            text("Hullbreaker Number: " + upgrades.get("HullbreakerNum") + " Cost: " + (Math.pow(upgrades.get("HullbreakerNum"),2)*10+30), 130, 170);
+            text("Hullbreaker Damage:" + upgrades.get("BreakerDamage") + " Cost: " + (upgrades.get("BreakerDamage")*10-20), 130, 230);
+            text("Hullbreaker Hitbox:" + upgrades.get("BreakerHitbox") + " Cost: " + (upgrades.get("BreakerHitbox")*10), 130, 290);
         }
         else{
             // if I not in the shop or playing, display the main menu
@@ -233,6 +269,9 @@ public class MySketch extends PApplet{
         offsetPoints.add(parseFloat(-20));
         upgrades.put("Fire Rate", 0);
         upgrades.put("Damage", 0);
+        upgrades.put("BreakerDamage", 3);
+        upgrades.put("HullbreakerNum", 0);
+        upgrades.put("BreakerHitbox", 1);
         for (int i = 0; i < 15; i++) {
             // set up the asteroids
             asteroids.add(new Asteriod());
@@ -404,5 +443,21 @@ public class MySketch extends PApplet{
         }
         py = pvy + py;
         px = pvx + px;
+    }
+    public void updateHullbreakers(){
+        for(Hullbreaker hullbreaker : hullbreakers){
+            hullbreaker.AI();
+            float h = hullbreaker.getH();
+            fill(255);
+            triangle(hullbreaker.getX() + 5 * sin(h), hullbreaker.getY() - 5 * cos(h),
+                    hullbreaker.getX() + 5 * cos(h) - 5 * sin(h), 5 * sin(h) + hullbreaker.getY() + 5 * cos(h),
+                    hullbreaker.getX() - 5 * cos(h) - 5 * sin(h), -5 * sin(h) + hullbreaker.getY() + 5 * cos(h));
+            fill(0,0);
+            strokeWeight(2);
+            stroke(100,100,255);
+            ellipse(hullbreaker.getX(), hullbreaker.getY(), upgrades.get("BreakerHitbox")*10, upgrades.get("BreakerHitbox")*10);
+            strokeWeight(0);
+            fill(255,255);
+        }
     }
 }
