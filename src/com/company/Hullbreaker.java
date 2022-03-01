@@ -25,8 +25,9 @@ public class Hullbreaker {
     private float vy = 0;
     private float h = 0;
     private float hAP = 0;
+    private boolean pi = false;
     public Asteriod target = new Asteriod();
-    public void AI(){
+    public void AI() {
         x += vx;
         y += vy;
         if (y < 0) {
@@ -43,7 +44,8 @@ public class Hullbreaker {
         }
         Asteriod closest = new Asteriod();
         float cl = 100000;
-        if (target.radii != targetr) {
+        if (target.radii != targetr || pi) {
+            pi = false;
             for (Asteriod asteriod : MySketch.asteroids) {
                 if (asteriod.collide(x, y, MySketch.upgrades.get("BreakerHitbox") * 10 + 10)) {
                     if (asteriod.radii < MySketch.upgrades.get("BreakerDamage") * 5) {
@@ -55,7 +57,7 @@ public class Hullbreaker {
                         asteriod.vy += vy;
                     }
                 }
-                if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl) {
+                if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl){
                     closest = asteriod;
                     cl = (float) (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2));
                 }
@@ -63,16 +65,23 @@ public class Hullbreaker {
             target = closest;
             targetr = (int) closest.radii;
         }
-        h = (float) Math.atan2(y-target.y, x-target.x);
-        vy += sin(h);
-        vx += cos(h);
+        if (abs(Math.atan2(y - target.y, x - target.x) - h) < 2){
+            h = (float) Math.atan2(y - target.y, x - target.x);
+            vy += 2 * sin(h);
+            vx += 2 * cos(h);
+        }
+        else{
+            pi = true;
+        }
         if (pow(vx, 2) + pow(vy, 2) > 400) {
             float r = (float) atan2(vy, vx);
             vx = (float) (cos(r)*20);
             vy = (float) (sin(r)*20);
         }
         if(hAP != h){
-            hAP +=h/10;
+            hAP += 0.1 * abs(h)/h;
         }
+        vx += 0.25 * sin(atan2(MySketch.py, MySketch.px));
+        vy += 0.25 * cos(atan2(MySketch.py, MySketch.px));
     }
 }

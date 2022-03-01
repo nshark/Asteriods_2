@@ -174,9 +174,9 @@ public class MySketch extends PApplet{
             rect(120, 250, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<300&&mouseY>260){
                 fill(0,0,255);
-                if (mousePressed && score >= upgrades.get("BreakerHitbox")*10){
+                if (mousePressed && score >= Math.pow(upgrades.get("BreakerHitbox"), 2)*10){
+                    score -= Math.pow(upgrades.get("BreakerHitbox"), 2)*10;
                     upgrades.replace("BreakerHitbox", upgrades.get("BreakerHitbox")+1);
-                    score -= upgrades.get("BreakerHitbox")*10-10;
                 }
             }
             rect(130, 260, 580, 40);
@@ -189,7 +189,7 @@ public class MySketch extends PApplet{
             text("Fire Rate:" + upgrades.get("Fire Rate") + " Cost: " + (upgrades.get("Fire Rate")*10+10), 130, 110);
             text("Hullbreaker Number: " + upgrades.get("HullbreakerNum") + " Cost: " + (Math.pow(upgrades.get("HullbreakerNum"),2)*10+30), 130, 170);
             text("Hullbreaker Damage:" + upgrades.get("BreakerDamage") + " Cost: " + (upgrades.get("BreakerDamage")*10-20), 130, 230);
-            text("Hullbreaker Hitbox:" + upgrades.get("BreakerHitbox") + " Cost: " + (upgrades.get("BreakerHitbox")*10), 130, 290);
+            text("Hullbreaker Hitbox:" + upgrades.get("BreakerHitbox") + " Cost: " + (Math.pow(upgrades.get("BreakerHitbox"), 2)*10), 130, 290);
         }
         else{
             // if I not in the shop or playing, display the main menu
@@ -449,9 +449,9 @@ public class MySketch extends PApplet{
             hullbreaker.AI();
             float h = hullbreaker.getH();
             fill(255);
-            triangle(hullbreaker.getX() + 5 * sin(h), hullbreaker.getY() - 5 * cos(h),
-                    hullbreaker.getX() + 5 * cos(h) - 5 * sin(h), 5 * sin(h) + hullbreaker.getY() + 5 * cos(h),
-                    hullbreaker.getX() - 5 * cos(h) - 5 * sin(h), -5 * sin(h) + hullbreaker.getY() + 5 * cos(h));
+            triangle(hullbreaker.getX() + 10 * sin(h), hullbreaker.getY() - 10 * cos(h),
+                    hullbreaker.getX() + 10 * cos(h) - 10 * sin(h), 10 * sin(h) + hullbreaker.getY() + 10 * cos(h),
+                    hullbreaker.getX() - 10 * cos(h) - 10 * sin(h), -10 * sin(h) + hullbreaker.getY() + 10 * cos(h));
             fill(0,0);
             strokeWeight(2);
             stroke(100,100,255);
