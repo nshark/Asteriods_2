@@ -9,7 +9,7 @@ public class Hullbreaker {
     private float x = 500;
 
     public float getH() {
-        return hAP;
+        return h;
     }
 
     public float getX() {
@@ -56,6 +56,16 @@ public class Hullbreaker {
                         asteriod.vx += vx;
                         asteriod.vy += vy;
                     }
+                }
+                if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl){
+                    closest = asteriod;
+                    cl = (float) (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2));
+                }
+            }
+            for (ResourceAsteriod asteriod : MySketch.resourceAsteriods) {
+                if (asteriod.collide(x, y, MySketch.upgrades.get("BreakerHitbox") * 10 + 10)) {
+                    asteriod.setup();
+                    MySketch.score += 10;
                 }
                 if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl){
                     closest = asteriod;

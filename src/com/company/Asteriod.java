@@ -11,7 +11,7 @@ public class Asteriod {
     public float vx;
     public float vy;
     public float radii;
-    private final Random ran = new Random();
+    final Random ran = new Random();
     Asteriod(){
         setup();
     }
@@ -43,6 +43,9 @@ public class Asteriod {
     public void update(){
         x += vx;
         y += vy;
+        if(Math.abs(this.radii) > 100){
+            this.setup();
+        }
     }
     public boolean collide(float ex, float ey, float eRadi){
         float dist = ((ex-x)*(ex-x) + (ey - y)*(ey - y));

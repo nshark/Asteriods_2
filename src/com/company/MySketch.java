@@ -13,8 +13,11 @@ public class MySketch extends PApplet{
     public static float py = 375;
     // are you in the shop menu
     public boolean shop = false;
+    public int ticks = 0;
+    public boolean mp = false;
     // upgrades:
     public static ArrayList<Hullbreaker> hullbreakers = new ArrayList<>();
+    public static ArrayList<ResourceAsteriod> resourceAsteriods = new ArrayList<>();
     public static HashMap<String, Integer> upgrades = new HashMap<>();
     // player heading in radians
     public static float ph = 0;
@@ -22,7 +25,7 @@ public class MySketch extends PApplet{
     public static float pvx = 0;
     // player velocity y
     public static float pvy = 0;
-    public static int score = 300;
+    public static int score = 30;
     public boolean lost = true;
     // recylables
     public ArrayList<Vector<Float>> re = new ArrayList<>();
@@ -32,6 +35,7 @@ public class MySketch extends PApplet{
     public int lives = 3;
     // ticks before next shot
     public int t = 20;
+    public ArrayList<ResourceAsteriod> r = new ArrayList<>();
     // all asteroids that harm you
     public static ArrayList<Asteriod> asteroids = new ArrayList<>();
     // offsets from px, py for things to be drawn at
@@ -49,24 +53,33 @@ public class MySketch extends PApplet{
     // called every tick
     public void draw(){
         //if I haven't lost
+        if (mp){
+            if(!mousePressed){
+                mp = false;
+            }
+        }
         if(!lost) {
             // erase the previous tick
+            ticks++;
             background(0);
             // set my color to white
             fill(255);
             // if active shots
             if (cannon.size() > 0) {
                 for (Vector<Float> v2 : cannon) {
-                    // update position based on velocity
-                    v2.set(0, v2.get(2) + v2.get(0));
-                    v2.set(1, v2.get(3) + v2.get(1));
-                    // if out of bounds, mark for removal
-                    if ((v2.get(0) > 1000 || v2.get(0) < 0 || v2.get(1) > 750 || v2.get(1) < 0)&& !re.contains(v2)) {
-                        re.add(v2);
-                    } else if(!re.contains(v2)) {
-                        // otherwise, draw them at the new position
-                        fill(255, 0, 0);
-                        ellipse(v2.get(0), v2.get(1), 10, 10);
+                    if (!re.contains(v2)) {
+                        // update position based on velocity
+                        v2.set(0, v2.get(2) + v2.get(0));
+                        v2.set(1, v2.get(3) + v2.get(1));
+                        // if out of bounds, mark for removal
+                        if ((v2.get(0) > 1000 || v2.get(0) < 0 || v2.get(1) > 750 || v2.get(1) < 0) && !re.contains(v2)) {
+                            re.add(v2);
+                            v2.set(0, 20000F);
+                        } else if (!re.contains(v2)) {
+                            // otherwise, draw them at the new position
+                            fill(255, 0, 0);
+                            ellipse(v2.get(0), v2.get(1), 10, 10);
+                        }
                     }
                 }
             }
@@ -78,6 +91,7 @@ public class MySketch extends PApplet{
             this.updatePlayer();
             // compute the rotated offset points for drawing the ship
             this.updateHullbreakers();
+            this.updateRasts();
             ArrayList<Float> offsetRotated = new ArrayList<>();
             for (int i = 0; i < offsetPoints.size(); i += 2) {
                 float x1 = offsetPoints.get(i);
@@ -107,6 +121,7 @@ public class MySketch extends PApplet{
             }
             strokeWeight(0);
             // draw the ship using the rotated offset points
+            fill(255);
             triangle(px + offsetRotated.get(4), py + offsetRotated.get(5), px + offsetRotated.get(6),
                     py + offsetRotated.get(7), px + offsetRotated.get(8), py + offsetRotated.get(9));
             triangle(px + offsetRotated.get(10), py + offsetRotated.get(11), px + offsetRotated.get(12),
@@ -124,8 +139,9 @@ public class MySketch extends PApplet{
             rect(10, 10, 100, 100);
             if(mouseX<100 && mouseX>20 && mouseY<100&&mouseY>20){
                 fill(0,0,255);
-                if (mousePressed){
+                if (mp){
                     shop = false;
+                    mp = false;
                 }
             }
             rect(20, 20, 80, 80);
@@ -133,9 +149,10 @@ public class MySketch extends PApplet{
             rect(120, 10, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<60&&mouseY>20){
                 fill(0,0,255);
-                if (mousePressed && score >= 10*upgrades.get("Damage") + 10){
+                if (mp && score >= 10*upgrades.get("Damage") + 10){
                     upgrades.replace("Damage", upgrades.get("Damage")+1);
                     score -= 10*upgrades.get("Damage");
+                    mp = false;
                 }
             }
             rect(130, 20, 580, 40);
@@ -143,9 +160,10 @@ public class MySketch extends PApplet{
             rect(120, 70, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<120&&mouseY>80){
                 fill(0,0,255);
-                if (mousePressed && score >= 10*upgrades.get("Fire Rate") + 10){
+                if (mp && score >= 10*upgrades.get("Fire Rate") + 10 && upgrades.get("Fire Rate") < 15){
                     upgrades.replace("Fire Rate", upgrades.get("Fire Rate")+1);
                     score -= 10*upgrades.get("Fire Rate");
+                    mp = false;
                 }
             }
             rect(130, 80, 580, 40);
@@ -153,10 +171,11 @@ public class MySketch extends PApplet{
             rect(120, 130, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<180&&mouseY>140){
                 fill(0,0,255);
-                if (mousePressed && score >= Math.pow(upgrades.get("HullbreakerNum"), 2)*10 + 30){
+                if (mp && score >= Math.pow(2, upgrades.get("HullbreakerNum"))*10 + 30){
                     upgrades.replace("HullbreakerNum", upgrades.get("HullbreakerNum")+1);
-                    score -= 10*Math.pow(upgrades.get("HullbreakerNum")-1, 2) + 30;
+                    score -= 10*Math.pow(2, upgrades.get("HullbreakerNum")-1) + 30;
                     hullbreakers.add(new Hullbreaker());
+                    mp = false;
                 }
             }
             rect(130, 140, 580, 40);
@@ -164,9 +183,10 @@ public class MySketch extends PApplet{
             rect(120, 190, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<240&&mouseY>200){
                 fill(0,0,255);
-                if (mousePressed && score >= upgrades.get("BreakerDamage")*10 - 20){
+                if (mp && score >= upgrades.get("BreakerDamage")*10 - 20){
                     upgrades.replace("BreakerDamage", upgrades.get("BreakerDamage")+1);
                     score -= upgrades.get("BreakerDamage")*10 - 30;
+                    mp = false;
                 }
             }
             rect(130, 200, 580, 40);
@@ -174,9 +194,10 @@ public class MySketch extends PApplet{
             rect(120, 250, 600, 60);
             if(mouseX<710 && mouseX>130 && mouseY<300&&mouseY>260){
                 fill(0,0,255);
-                if (mousePressed && score >= Math.pow(upgrades.get("BreakerHitbox"), 2)*10){
-                    score -= Math.pow(upgrades.get("BreakerHitbox"), 2)*10;
+                if (mp && score >= Math.pow(upgrades.get("BreakerHitbox"), 4)*10){
+                    score -= Math.pow(upgrades.get("BreakerHitbox"), 4)*10;
                     upgrades.replace("BreakerHitbox", upgrades.get("BreakerHitbox")+1);
+                    mp = false;
                 }
             }
             rect(130, 260, 580, 40);
@@ -186,10 +207,15 @@ public class MySketch extends PApplet{
             text(score, 900, 75);
             textSize(30);
             text("Damage:" + upgrades.get("Damage") + " Cost: " + (upgrades.get("Damage")*10+10), 130, 50);
-            text("Fire Rate:" + upgrades.get("Fire Rate") + " Cost: " + (upgrades.get("Fire Rate")*10+10), 130, 110);
-            text("Hullbreaker Number: " + upgrades.get("HullbreakerNum") + " Cost: " + (Math.pow(upgrades.get("HullbreakerNum"),2)*10+30), 130, 170);
+            if(upgrades.get("Fire Rate") > 14){
+                text("Fire Rate:" + upgrades.get("Fire Rate") + " Cost: MAXED", 130, 110);
+            }
+            else {
+                text("Fire Rate:" + upgrades.get("Fire Rate") + " Cost: " + (upgrades.get("Fire Rate") * 10 + 10), 130, 110);
+            }
+            text("Hullbreaker Number: " + upgrades.get("HullbreakerNum") + " Cost: " + (Math.pow(2, upgrades.get("HullbreakerNum"))*10+30), 130, 170);
             text("Hullbreaker Damage:" + upgrades.get("BreakerDamage") + " Cost: " + (upgrades.get("BreakerDamage")*10-20), 130, 230);
-            text("Hullbreaker Hitbox:" + upgrades.get("BreakerHitbox") + " Cost: " + (Math.pow(upgrades.get("BreakerHitbox"), 2)*10), 130, 290);
+            text("Hullbreaker Hitbox:" + upgrades.get("BreakerHitbox") + " Cost: " + (Math.pow(upgrades.get("BreakerHitbox"),4)*10), 130, 290);
         }
         else{
             // if I not in the shop or playing, display the main menu
@@ -199,13 +225,15 @@ public class MySketch extends PApplet{
             rect(240, 240, 520, 70);
             if(mouseX < 750 && mouseX > 250 && mouseY < 300 && mouseY > 250){
                 fill(0,0,255);
-                if (mousePressed){
+                if (mp){
                     lost=false;
                     lives = 3;
                     px = 500;
                     py = 375;
                     pvx = 0;
                     pvy = 0;
+                    ticks = 0;
+                    mp = false;
                 }
             }
             rect(250, 250, 500, 50);
@@ -213,8 +241,9 @@ public class MySketch extends PApplet{
             rect(240, 340, 520, 70);
             if(mouseX<750 && mouseX>250 && mouseY<400&&mouseY>350){
                 fill(0,0,255);
-                if (mousePressed){
+                if (mp){
                     shop = true;
+                    mp = false;
                 }
             }
             rect(250, 350, 500, 50);
@@ -224,7 +253,32 @@ public class MySketch extends PApplet{
             text("shop", 450, 390);
         }
     }
+
+    private void updateRasts() {
+        if(ticks>100 && random(1000) < ticks/100){
+            boolean found = false;
+            for (ResourceAsteriod ra : resourceAsteriods){
+                if (!ra.exist){
+                    ra.exist = true;
+                    found = true;
+                    break;
+                }
+            }
+            if (!found){
+                ResourceAsteriod ra = new ResourceAsteriod();
+                ra.exist = true;
+                resourceAsteriods.add(ra);
+            }
+        }
+        for(ResourceAsteriod ra : resourceAsteriods){
+            if (ra.exist) {
+                ra.tick(this);
+            }
+        }
+    }
+
     public void mousePressed(){
+        mp = true;
     }
 
     @Override
@@ -317,9 +371,8 @@ public class MySketch extends PApplet{
     public void updateAsteroids(){
         for (int i = 0; i < asteroids.size(); i++) {
             Asteriod asteriod = asteroids.get(i);
-            asteriod.update();
             for (Vector<Float> v3 : cannon) {
-                if (asteriod.collide(v3.get(0), v3.get(1), 10)) {
+                if (asteriod.collide(v3.get(0), v3.get(1), 10) && !lost) {
                     asteriod.radii = asteriod.radii - 20 + 5*upgrades.get("Damage");
                     asteriod.vx += v3.get(2);
                     asteriod.vy += v3.get(3);
@@ -331,6 +384,7 @@ public class MySketch extends PApplet{
                     re.add(v3);
                 }
             }
+            asteriod.update();
             for (int j = i + 1; j < asteroids.size(); j++) {
                 Asteriod a2 = asteroids.get(j);
                 if (asteriod.collide(a2.x, a2.y, a2.radii)) {
@@ -346,6 +400,15 @@ public class MySketch extends PApplet{
                     if (a2.radii < 5) {
                         a2.setup();
                     }
+                }
+            }
+            for (int j = i + 1; j < resourceAsteriods.size(); j++) {
+                Asteriod a2 = resourceAsteriods.get(j);
+                if (asteriod.collide(a2.x, a2.y, a2.radii)) {
+                    asteriod.vy += a2.vy * a2.radii / asteriod.radii;
+                    asteriod.vx += a2.vx * a2.radii / asteriod.radii;
+                    a2.vx -= asteriod.vx * asteriod.radii / a2.radii;
+                    a2.vy -= asteriod.vy * asteriod.radii / a2.radii;
                 }
             }
             if (asteriod.x > 1000 || asteriod.x < 0 || asteriod.y > 750 || asteriod.y < 0) {
@@ -378,6 +441,13 @@ public class MySketch extends PApplet{
         }
         if (keys.get('d')) {
             ph += 0.1;
+        }
+        if (keys.get('q')){
+            if (!(pvy == 0) && !(pvx == 0)){
+                float r = atan2(pvy, pvx);
+                pvx -= 0.15 * cos(r);
+                pvy -= 0.15 * sin(r);
+            }
         }
         if (keys.get('e')) {
             if (t > 20 - upgrades.get("Fire Rate")) {
