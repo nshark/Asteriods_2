@@ -25,7 +25,7 @@ public class MySketch extends PApplet{
     public static float pvx = 0;
     // player velocity y
     public static float pvy = 0;
-    public static int score = 30;
+    public static int score = 100;
     public boolean lost = true;
     // recylables
     public ArrayList<Vector<Float>> re = new ArrayList<>();

@@ -1,5 +1,6 @@
 package com.company;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 import static java.lang.Math.*;
@@ -45,6 +46,31 @@ public class Asteriod {
         y += vy;
         if(Math.abs(this.radii) > 100){
             this.setup();
+        }
+        for(Hullbreaker hullbreaker : MySketch.hullbreakers){
+            if (this.collide(hullbreaker.getX(), hullbreaker.getY(),MySketch.upgrades.get("BreakerHitbox"))){
+                if (this.radii < MySketch.upgrades.get("BreakerDamage")) {
+                    this.setup();
+                    if (this.getClass() == ResourceAsteriod.class) {
+                        MySketch.score += 10;
+                    } else {
+                        MySketch.score += 1;
+                    }
+                }
+                else{
+                    this.radii -= MySketch.upgrades.get("BreakerDamage")*10;
+                    if (this.getClass() == ResourceAsteriod.class){
+                        ((ResourceAsteriod) this).offsets = new ArrayList<>();
+                        for (int i = 0; i < this.radii/5; i++) {
+                            ArrayList<Float> t = new ArrayList<>();
+                            t.add(ran.nextFloat(this.radii/3*-1, this.radii/3));
+                            t.add(ran.nextFloat(this.radii/3*-1, this.radii/3));
+                            t.add(ran.nextFloat(10));
+                            ((ResourceAsteriod) this).offsets.add(t);
+                        }
+                    }
+                }
+            }
         }
     }
     public boolean collide(float ex, float ey, float eRadi){

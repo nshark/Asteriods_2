@@ -47,26 +47,12 @@ public class Hullbreaker {
         if (target.radii != targetr || pi) {
             pi = false;
             for (Asteriod asteriod : MySketch.asteroids) {
-                if (asteriod.collide(x, y, MySketch.upgrades.get("BreakerHitbox") * 10 + 10)) {
-                    if (asteriod.radii < MySketch.upgrades.get("BreakerDamage") * 5) {
-                        asteriod.setup();
-                        MySketch.score++;
-                    } else {
-                        asteriod.radii -= MySketch.upgrades.get("BreakerDamage") * 5;
-                        asteriod.vx += vx;
-                        asteriod.vy += vy;
-                    }
-                }
                 if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl){
                     closest = asteriod;
                     cl = (float) (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2));
                 }
             }
             for (ResourceAsteriod asteriod : MySketch.resourceAsteriods) {
-                if (asteriod.collide(x, y, MySketch.upgrades.get("BreakerHitbox") * 10 + 10)) {
-                    asteriod.setup();
-                    MySketch.score += 10;
-                }
                 if (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2) < cl){
                     closest = asteriod;
                     cl = (float) (pow(asteriod.x - x, 2) + pow(asteriod.y - y, 2));
